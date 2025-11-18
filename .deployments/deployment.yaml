@@ -1,0 +1,26 @@
+# Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rcm-mdm-frontend-deployment
+spec:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rcm-mdm-frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rcm-mdm-frontend-app
+  template:
+    metadata:
+      labels:
+        app: rcm-mdm-frontend-app
+    spec:
+      containers:
+        - name: react-container
+          image: my_image:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80

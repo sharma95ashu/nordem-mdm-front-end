@@ -1,0 +1,211 @@
+.KycTable__rb-found {
+  table {
+    border: 1px solid #eb2f96;
+    border-radius: 8px;
+    thead {
+      tr {
+        th {
+          background-color: #ffadd2 !important;
+        }
+        ::before {
+          background-color: #eb2f96 !important;
+        }
+      }
+    }
+    tbody {
+      tr .ant-table-cell-row-hover {
+        background: inherit !important;
+      }
+      tr:nth-child(odd) {
+        background-color: #fff0f6;
+      }
+      tr:hover {
+        background-color: #ffffff !important;
+      }
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 8px;
+      }
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 8px;
+      }
+    }
+  }
+}
+
+.KycTable__se-found {
+  table {
+    border: 1px solid #faad14;
+    border-radius: 8px;
+    thead {
+      tr {
+        th {
+          background-color: #ffe58f !important;
+        }
+        ::before {
+          background-color: #faad14 !important;
+        }
+      }
+    }
+    tbody {
+      tr .ant-table-cell-row-hover {
+        background: inherit !important;
+      }
+      tr:nth-child(odd) {
+        background-color: #fffbe6;
+      }
+      tr:hover {
+        background-color: #ffffff !important;
+      }
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 8px;
+      }
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 8px;
+      }
+    }
+  }
+}
+
+.KycTable__pan-found {
+  table {
+    border: 1px solid #1755a6;
+    border-radius: 8px;
+    thead {
+      tr {
+        th {
+          background-color: #8bb8ee !important;
+        }
+        ::before {
+          background-color: #1755a6 !important;
+        }
+      }
+    }
+    tbody {
+      tr .ant-table-cell-row-hover {
+        background: inherit !important;
+      }
+      tr:nth-child(odd) {
+        background-color: #e5effc;
+      }
+      tr:hover {
+        background-color: #ffffff !important;
+      }
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 8px;
+      }
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 8px;
+      }
+    }
+  }
+}
+
+.KycTable__exec-remark,
+.kycTable-death-case-new-ab-details {
+  table {
+    border: 1px solid #f5222d;
+    border-radius: 8px;
+    thead {
+      tr {
+        th {
+          background-color: #fca5a5 !important;
+        }
+        ::before {
+          background-color: #f5222d !important;
+        }
+      }
+    }
+    tbody {
+      tr .ant-table-cell-row-hover {
+        background: inherit !important;
+      }
+      tr:nth-child(odd) {
+        background-color: #fff1f0;
+      }
+      tr:hover {
+        background-color: #ffffff !important;
+      }
+      tr:last-child td:first-child {
+        border-bottom-left-radius: 8px;
+      }
+      tr:last-child td:last-child {
+        border-bottom-right-radius: 8px;
+      }
+    }
+  }
+}
+
+.UserProfileCard {
+  .ant-card-body {
+    padding: 16px;
+  }
+}
+
+.kyc_admin_base {
+  background-color: white;
+  padding: 24px 24px 24px 24px;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+// This below styling is used to make TABS full-width and fix the flickerring issue...
+.kycTab {
+  .ant-tabs-nav-list {
+    justify-content: space-around;
+    align-items: center;
+    width: 100% !important;
+    .ant-tabs-tab {
+      justify-content: center;
+      flex-grow: 1;
+      flex-basis: 0;
+      margin: 1px;
+    }
+  }
+}
+
+.success-switch.ant-switch.ant-switch-checked .ant-switch-inner {
+  background-color: #00a557;
+}
+.margin-top-8px {
+  margin-top: 8px;
+}
+
+.color-switch.ant-switch.ant-switch-checked .ant-switch-inner {
+  background-color: #00a557;
+}
+
+.color-switch.ant-switch .ant-switch-inner {
+  background-color: #dc2626;
+}
+
+.margin-bottom--30px {
+  margin-bottom: -30px;
+}
+
+.margin-top-30 {
+  margin-top: 30px;
+}
+
+.rejection__options__container {
+  height: 60vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.compact_table {
+  .ant-table-thead {
+    th {
+      padding: 8px !important;
+    }
+  }
+  .ant-table-tbody {
+    .ant-table-cell {
+      padding: 8px !important;
+    }
+  }
+}
+
+.bordered__info__alert {
+  border: 1px solid #8bb8ee;
+}

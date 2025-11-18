@@ -1,0 +1,69 @@
+# Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rcm-mdm-frontend-deployment
+spec:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rcm-mdm-frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rcm-mdm-frontend-app
+  template:
+    metadata:
+      labels:
+        app: rcm-mdm-frontend-app
+    spec:
+      containers:
+        - name: react-container
+          image: my_image:latest
+          env:
+            - name: TZ
+              value: "Asia/Kolkata"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+---
+# Service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rcm-mdm-frontend-service
+spec:
+  selector:
+    app: rcm-mdm-frontend-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mdm-frontend-ingress
+  namespace: default  # Use the appropriate namespace for your service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - mdm-uat.nordemtech.com
+    secretName: mdm-frontend-tls
+  rules:
+  - host: domain_name  # This should be a domain you can configure locally
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rcm-mdm-frontend-service  # The name of your service
+            port:
+              number: 80
+

@@ -1,0 +1,123 @@
+// define all variables
+$primary: #0a0322;
+$secondary: #438fff;
+$headings: #ffffff;
+$border-radius: 3px;
+$font-family: "Inter", sans-serif;
+$default-font-size: 0.625rem;
+$heading-font-size: 0.75rem;
+$default-HTML-fontsize: 1rem;
+$font-weight-400: 400;
+$font-weight-500: 500;
+$font-weight-600: 600;
+$font-weight-700: 700;
+$font-weight-800: 800;
+$default-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.16);
+$default-border-color: #f5f5f533;
+$Table-head-color: #b6b6b6;
+$death-case-color: #ffccc7;
+$death-case-border: #f5222d;
+$death-case-font-color: #000000e0;
+$exception_case_bg_color_light: #ffe173;
+$exception_case_bg_color_dark: #8d8d8d;
+
+// Background color
+$box-dark-Bg: rgba(32, 26, 51, 0.5);
+$box-light-Bg: #ffffff;
+$green-Bg: #bcf8e6;
+$light-green-Bg: rgba(65, 195, 156, 0.25);
+$red-Bg: #ffd3d6;
+$light-red-Bg: rgba(231, 74, 82, 0.25);
+$light-blue-Bg-Hex: #150e2b;
+$light-blue-primary: #1b1234;
+$light-white-color: rgba(255, 255, 255, 0.25);
+// Color Variables
+$white-color: #ffffff;
+$green-color: #169a73;
+$green-light-color: #bcf8e6;
+$red-color: #cb434b;
+$red-light-color: #f8aeb3;
+$yellow-color: #e8922f;
+$grey-color: #8891a3;
+$grey-light-color: #666666;
+$black-color: #000000;
+$scroll-color: rgba(238, 239, 243, 0.5);
+$tab-color: #9fafb9;
+$tab-border: rgba(245, 245, 245, 0.5);
+$blue-color: #1469e7;
+$dark-red-color: #e74a52;
+$dark-green-color: #169a73;
+$light-grey-over: #d8e0e3;
+$disabled-property-dark: rgba(255, 255, 255, 0.5);
+$disabled-property-light: rgba(0, 0, 0, 0.38);
+$light-green-btn-bgColor: rgba(188, 248, 230, 1);
+$green-btn-txt-clr: rgba(40, 154, 120, 1);
+$disable-btn-grey-clr: rgba(130, 123, 155, 1);
+$disable-btn-txt-clr: rgba(50, 46, 65, 1);
+$darkInputborder: rgba(182, 182, 182, 0.4);
+$alert-padding-small: 9px 16px;
+$radioButtonCheckedBackgroundHeavy: #f2f7fd;
+
+:export {
+  primary: $primary;
+  secondary: $secondary;
+  headingColor: $headings;
+  borderRadius: $border-radius;
+  darkBackground: $primary;
+  lightBackground: #fff;
+  fontFamily: $font-family;
+  defaultFontSize: $default-font-size;
+  headingFontSize: $heading-font-size;
+  colorWhite: $white-color;
+  colorGreen: $green-color;
+  colorRed: $red-color;
+  colorYellow: $yellow-color;
+  colorGrey: $grey-color;
+  colorblack: $black-color;
+  fontWeight400: $font-weight-400;
+  fontWeight500: $font-weight-500;
+  fontWeight600: $font-weight-600;
+  fontWeight700: $font-weight-700;
+  fontWeight800: $font-weight-800;
+  boxDarkBg: $box-dark-Bg;
+  boxLightBg: $box-light-Bg;
+  defaultBoxShadow: $default-box-shadow;
+  borderColor: $default-border-color;
+  tableHeadColor: $Table-head-color;
+  defaultHTMLFontSize: $default-HTML-fontsize;
+  tabColor: $tab-color;
+  greenBg: $green-Bg;
+  lightGreenBg: $light-green-Bg;
+  redBg: #ffd3d6;
+  lightRedBg: $light-red-Bg;
+  tabBorderColor: $tab-border;
+  lightBlueBgHex: $light-blue-Bg-Hex;
+  lightBluePrimary: $light-blue-primary;
+  colorBlue: $blue-color;
+  colorDarkGreen: $dark-green-color;
+  colorDarkRed: $dark-red-color;
+  lightWhiteBG: $light-white-color;
+  colorGreenLight: $green-light-color;
+  colorRedLight: $red-light-color;
+  lightGreyOver: $light-grey-over;
+  colorGreyLight: $grey-light-color;
+  disabledColorDark: $disabled-property-dark;
+  disabledColorLight: $disabled-property-light;
+  btnLightColor: $light-green-btn-bgColor;
+  btnTxtClr: $green-btn-txt-clr;
+  disbtnBgClr: $disable-btn-grey-clr;
+  disbtntxtClr: $disable-btn-txt-clr;
+  darkInputborder: $darkInputborder;
+  alertPaddingSmall: $alert-padding-small;
+  radioButtonCheckedBackgroundHeavy: $radioButtonCheckedBackgroundHeavy;
+  deathCaseColor: $death-case-color;
+  deathCaseBorder: $death-case-border;
+  deathCaseFontColor: $death-case-font-color;
+  expInfoBGColorDr: $exception_case_bg_color_dark;
+  expInfoBGColorLt: $exception_case_bg_color_light;
+}
+
+/**
+** Copy below line to import in components
+**/
+// import variables from 'Styles/variables.scss';

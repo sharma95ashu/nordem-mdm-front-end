@@ -1,0 +1,485 @@
+import React, { useState } from "react";
+import { Button, Col, Flex, Form, Pagination, Row, Spin, Table, Tooltip, Upload, message } from "antd";
+import { DownloadOutlined, InfoCircleOutlined, UploadOutlined, } from "@ant-design/icons";
+import * as XLSX from "xlsx";
+import { snackBarErrorConf, ABSheetData } from "Helpers/ats.constants";
+import { enqueueSnackbar } from "notistack";
+import { isEmpty } from "lodash";
+import { TextTruncate } from "Helpers/ats.helper";
+// import ProgressCount from "./ProgressCount";
+
+const NotificationUpload = (props) => {
+
+    const [showType, setShowType] = useState("bulk_upload");
+    const [dataSource, setDataSource] = useState([]);
+
+    const [dataSourceCopy, setdataSourceCopy] = useState([]);
+    const [dataSourceCount, setdataSourceCount] = useState(0);
+    const [columns, setcolumns] = useState([]);
+
+
+    const [showSpin, setshowSpin] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const pageSize = 5;
+    const stylesheet = {
+        tableStyle: {
+            marginBottom: '10px'
+        }
+    }
+
+    const onPageChange = (page, pageSize) => {
+        setDataSource([]);
+        setCurrentPage(page);
+        let d = dataSourceCopy.slice((page - 1) * pageSize, page * pageSize);
+        setTimeout(() => {
+            setDataSource(d);
+        }, 100);
+    };
+    const config = {
+        name: "file",
+        accept: ".xlsx, .csv, .xls",
+        maxCount: 1,
+        // onChange(info) {
+        // },
+        beforeUpload(file, fileList) {
+            handlefile(file);
+        }
+    };
+
+
+    // this method used to handel file after choose
+    const handlefile = (file) => {
+        try {
+            if (
+                checkFileExtension(file.name, "csv") ||
+                checkFileExtension(file.name, "xlsx") ||
+                checkFileExtension(file.name, "xls")
+            ) {
+                fileReader(file);
+            } else {
+                enqueueSnackbar("Invalid file. Accept only xlsx, xls, CSV", snackBarErrorConf);
+            }
+        } catch (error) { }
+    };
+
+    // This method used to check file extension
+    const checkFileExtension = (filename, extension) => {
+        const regex = new RegExp("\\." + extension + "$", "i");
+        return regex.test(filename);
+    };
+
+    // This method used to parse file data
+    const fileReader = (eFile) => {
+        try {
+            const file = eFile;
+            if (file) {
+                setshowSpin(true);
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, {
+                        type: "binary"
+                        // cellDates: true
+                    });
+
+                    const sheetName = workbook.SheetNames[0]; // Assuming the data is in the first sheet
+                    const worksheet = workbook.Sheets[sheetName];
+                    // Assuming the data starts from A2 (skip the header)
+                    let records = XLSX.utils.sheet_to_json(worksheet, { raw: true, defval: "" }); //{  header: 1, range: 1 }
+
+                    // For Second sheet
+                    // Assuming the data starts from A2 (skip the header)
+                    // eslint-disable-next-line no-unused-vars
+
+                    const rLength = records.length;
+                    const maxSize = 4 * 1024 * 1024; // 4MB in bytes
+                    if (rLength === 0) {
+                        return enqueueSnackbar("No records found in sheet", snackBarErrorConf);
+                    } else if (rLength > 4000) {
+                        setshowSpin(false);
+                        return enqueueSnackbar("Allow only 4000 records at once", snackBarErrorConf);
+                    } else if (file.size > maxSize) {
+                        return enqueueSnackbar("Allow only max 4MB file", snackBarErrorConf);
+                    } else {
+
+                        // setrecordFile(file);
+
+                        props.setUploadFile(file)
+
+                        const columns = await generateColumn(records);
+
+                        const expectedColumnTitles = [
+                            "AB Number",
+                            "Registration ID",
+                            "Status",
+                        ];
+
+                        const actualColumnTitles = columns.map((col) => col.title);
+                        const allTitlesMatch = expectedColumnTitles.every((title) =>
+                            actualColumnTitles.includes(title)
+                        );
+
+                        if (!allTitlesMatch) {
+                            // At least one expected column title is missing in the actual titles
+                            message.error("Invalid File");
+                            setshowSpin(false);
+                            return false;
+                        }
+
+                        setcolumns(columns);
+                        const parentMap = await getParentData(records);
+                        const res = await dataValidation(records, parentMap);
+                        setShowType("show_list");
+                        const recData = await convertDataToTree(res.records, true);
+                        props.setValidFileCheck(!recData.isValid)
+                        setDataSource(
+                            recData.nodes.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                        );
+                        let deepCopy = JSON.parse(JSON.stringify(recData.nodes));
+                        setdataSourceCopy(deepCopy);
+                        setdataSourceCount(recData?.nodes?.length || 0);
+                        setshowSpin(false);
+                    }
+                };
+                reader.readAsBinaryString(file);
+            }
+        } catch (error) {
+            // setshowSpin(false);
+        }
+    };
+
+    // this function used to generate column dynamically
+    const generateColumn = (records) => {
+        let column = [];
+        return new Promise((resolve, reject) => {
+            try {
+                if (records?.length) {
+                    let keys = Object.keys(records[0]);
+                    keys.forEach((i, k) => {
+                        column.push({
+                            title: i,
+                            dataIndex: i,
+                            //sorter: (a, b) => a["Type"].localeCompare(b["Type"]),
+                            key: i,
+                            render: (value, record) => renderData(record, i)
+                        });
+
+                        if (k == keys.length - 1) {
+                            resolve(column);
+                        }
+                    });
+                }
+            } catch (error) {
+                resolve(column);
+            }
+        });
+    };
+
+    // this method used to get parent data from record based on master key
+    const getParentData = (records) => {
+        return new Promise((resolve, reject) => {
+            try {
+                let parentMap = {};
+                records.forEach((obj, k) => {
+                    if (k == records.length - 1) {
+                        resolve(parentMap);
+                    }
+                });
+            } catch (error) {
+                resolve({});
+            }
+        });
+    };
+
+    // this method used to check file validation
+    const dataValidation = (records, parentMap) => {
+        return new Promise((resolve, reject) => {
+            try {
+                if (records?.length > 0) {
+                    dataValidationFn(records, 0, true, parentMap, (res) => {
+                        resolve(res);
+                    });
+                } else {
+                    resolve(records);
+                }
+            } catch (error) { }
+        });
+    };
+
+    //this method used to handle file validation in recusrion
+    const dataValidationFn = (records, i, isValid, parentMap, fn) => {
+        try {
+            if (records?.[i]) {
+                const rec = records?.[i];
+                records[i]["errors"] = {};
+                let parent = rec.Parent; //rec.Parent ? parseInt(rec.Parent) : null;
+                if (parent !== null && parentMap[parent]) {
+                    // Copy missing fields from parent to variation
+                    Object.keys(parentMap[parent]).forEach((key) => {
+                        // eslint-disable-next-line no-prototype-builtins
+                        if ((key !== "Parent" && !rec.hasOwnProperty(key)) || isEmpty(rec[key])) {
+                            records[i][key] = parentMap[parent][key];
+                        }
+                    });
+                }
+
+                i++;
+                dataValidationFn(records, i, isValid, parentMap, fn);
+            } else {
+                fn({ records, isValid: isValid });
+            }
+        } catch (error) {
+            fn({ records, isValid: isValid });
+        }
+    };
+
+    // Iterate through data to find top-level nodes
+    const convertDataToTree = async (data, isValid) => {
+        try {
+            // eslint-disable-next-line no-async-promise-executor
+            return new Promise(async (resolve, reject) => {
+                let nodes = [];
+
+
+                for (let i = 0; i < data.length; i++) {
+                    let d = data[i];
+
+
+                    if (isEmpty(d["Parent"])) {
+
+                        const no_special_character = (value) => {
+                            let sp_regex = /^[0-9]*$/;
+                            return sp_regex.test(value);
+                        }
+
+                        const storeCodeCheck = (value) => {
+                            let sp_regex = /^\d{3,9}$/;
+                            return sp_regex.test(value);
+                        }
+
+                        const RegistrationIDCheck = (value) => {
+                            let sp_regex = /^\d{1,9}$/;
+                            return sp_regex.test(value);
+                        }
+
+                        const checkForDuplicates = (values) => {
+                            const count = data.filter(item => item[values] === d[values]).length;
+
+                            if (count >= 2) {
+                                return true
+                            } else {
+                                return false;
+                            }
+
+                        }
+
+
+                        let AB_check_Duplicate = checkForDuplicates("AB Number")
+
+                        let Registration_ID_Duplicate = checkForDuplicates("Registration ID")
+
+
+                        let statusValue = d["Status"];
+
+                        let statusCheck = false;
+
+                        if (statusValue === "Active" || statusValue === "Inactive" || statusValue === "active" || statusValue === "inactive") {
+                            statusCheck = false;
+                        } else {
+                            statusCheck = true;
+                        }
+
+                        let store_code_formetCheck = no_special_character(d["AB Number"]);
+
+                        let RegistrationID_formetCheck = no_special_character(d["Registration ID"]);
+
+                        let storeCodeValid = storeCodeCheck(d["AB Number"]);
+
+                        let RegistrationIDValid = RegistrationIDCheck(d["Registration ID"]);
+
+                        if (!d["AB Number"] || isEmpty(d["AB Number"].toString()) || parseInt(d["AB Number"]) <= 0 || !store_code_formetCheck || !storeCodeValid || AB_check_Duplicate) {
+                            isValid = false;
+                            d["errors"]["AB Number"] = "AB Number cannot be empty, zero, or negative. It should contain only numbers and must be between 3 and 9 digits long and duplicate AB Number is not allowed.";
+                        }
+
+                        if (!d["Registration ID"] || isEmpty(d["Registration ID"].toString()) || parseInt(d["Registration ID"]) <= 0 || !RegistrationID_formetCheck || !RegistrationIDValid || Registration_ID_Duplicate) {
+                            isValid = false;
+                            d["errors"]["Registration ID"] = "Registration ID cannot be empty, zero, or negative. It should contain only numbers and must be between 1 and 9 digits long and duplicate Registration ID is not allowed.";
+                        }
+
+                        if (!d["Status"] || isEmpty(d["Status"].toString()) || statusCheck) {
+                            isValid = false;
+                            d["errors"]["Status"] = "Field cannot be empty and should be active or inactive";
+                        }
+
+                        nodes.push({
+                            ...d,
+                            key: d["Send Notification"]
+                        });
+                    }
+
+                    if (i == data.length - 1) {
+                        resolve({ nodes, isValid: isValid });
+                    }
+                }
+            });
+        } catch (error) { }
+    };
+
+    // this method used to manupulate item data in loop and show the error
+    const itemdata = (item, value) => {
+        return (
+            <>
+                <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }}>
+                    {item?.errors && Object.keys(item.errors).length > 0 && item?.errors?.[value] ? (
+                        <>
+                            <span style={{ color: "#BB0A1E" }}>
+                                {item[value] && TextTruncate(item[value], 30, true)}
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            <span>{item[value] && TextTruncate(item[value], 30, true)}</span>
+                        </>
+                    )}
+                    {item?.errors && Object.keys(item.errors).length > 0 && item?.errors?.[value] && (
+                        <>
+                            <Tooltip placement="bottom" title={item?.errors?.[value]} color={"#BB0A1E"}>
+                                <span>
+                                    <InfoCircleOutlined />
+                                </span>
+                            </Tooltip>
+                        </>
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    // this method used to replace render function in column
+    const renderData = (record, value) => ({
+        props: {
+            style:
+                record?.errors && Object.keys(record.errors).length > 0 && record?.errors?.[value]
+                    ? { background: "#fcf3f4", color: "#BB0A1E", fontSize: "16px" }
+                    : {}
+        },
+        children: itemdata(record, value)
+    });
+
+    // Function to determine row class name based on age
+    const getRowClassName = (record, index) => {
+        return record["Type"] == "Master" ? "parent-row" : "";
+    };
+
+    // this method used to download sample file
+    const downloadSheet = () => {
+        try {
+
+            const data = ABSheetData.ABSheet;
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            // Freeze the first row
+            ws["!freeze"] = {
+                xSplit: 0,
+                ySplit: 1,
+                topLeftCell: "A2",
+                activePane: "bottomRight",
+                state: "frozen"
+            };
+            const instructionData = [
+                { 'Column Name': "AB Number", Description: "Enter the correct AB Number matching the system record." },
+                { 'Column Name': "Registration ID", Description: "Enter the correct registration ID matching the system record." },
+                { 'Column Name': "Status", Description: "Enter the status of AB as either active or inactive" },
+            ];
+            const ws3 = XLSX.utils.json_to_sheet(instructionData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, ws, "AB List");
+            XLSX.utils.book_append_sheet(workbook, ws3, "Instructions");
+            XLSX.writeFile(workbook, "AB-Sample-Sheet.xlsx");
+        } catch (error) { }
+    };
+
+    const handleUploadFile = (value) => {
+        // props.setUploadFile(value);
+    }
+
+    return (
+        <>
+
+            <Row gutter={[0, 0]} style={{ marginBottom: '0' }}>
+                <Col span={12}>
+                    <Form.Item
+                        name="notification_excel"
+                        label="Upload Associate Buyer List"
+                        rules={[
+                            { required: true, message: "Upload is required" },
+                        ]}>
+
+                        <Upload onChange={(e) => handleUploadFile(e)} {...config} showUploadList={false}>
+                            <Button size="large" block><UploadOutlined /> Upload File</Button>
+                        </Upload>
+
+                    </Form.Item>
+                </Col>
+
+                <Col span={12}>
+                    <Form.Item label=" ">
+                        <Button size="large" onClick={downloadSheet} type="link"><DownloadOutlined /> Download Sample File</Button>
+                    </Form.Item>
+                </Col>
+            </Row>
+
+            {showType == "show_list" && (
+                <>
+                    <Table
+                        style={stylesheet.tableStyle}
+                        columns={columns}
+                        dataSource={dataSource}
+                        pagination={false}
+                        bordered={true}
+                        scroll={{ x: "max-content" }}
+                        rowClassName={getRowClassName}
+                    />
+
+                    <Pagination
+                        current={currentPage}
+                        total={dataSourceCount}
+                        defaultPageSize={pageSize}
+                        onChange={onPageChange}
+                        showSizeChanger
+                        pageSizeOptions={["5", "10", "20", "50", "100"]}
+                    />
+                </>
+            )}
+
+            {showType == "bulk_upload" && (
+                <>
+                    <Row gutter={[0, 24]}>
+                        {showSpin && (
+                            <>
+                                <Col span={24}>
+                                    <Flex
+                                        style={{ margin: 20 }}
+                                        justify={"center"}
+                                        width="100%"
+                                        vertical={true}
+                                        gap={5}
+                                        align="center">
+                                        <Spin />
+                                        <p className="ant-upload-text">Please wait. File is processing ...</p>
+                                    </Flex>
+                                </Col>
+                            </>
+                        )}
+                    </Row>
+                </>
+            )}
+
+        </>
+
+    );
+};
+
+export default NotificationUpload;
