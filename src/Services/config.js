@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 export const apiConfig = {
-  backendUrl: process.env.REACT_APP_BASEAPI_URL,
+  backendUrl: "http://223.239.131.254:30011/api",
   sentryDsn: "",
   googleAnalyticsId: undefined
 };

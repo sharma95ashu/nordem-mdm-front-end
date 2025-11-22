@@ -16,7 +16,7 @@ const ProgressCount = (props) => {
 
     const localRandomId = localStorage.getItem("randomId");
     const eventSource = new EventSourcePolyfill(
-      `${process.env.REACT_APP_BASEAPI_URL}/generic/bulk-import-progress`
+      `${"http://223.239.131.254:30011/api"}/generic/bulk-import-progress`
       // eventSourceInitDict,
     );
     eventSource.onmessage = (event) => {
