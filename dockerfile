@@ -4,4 +4,4 @@ WORKDIR /app
 COPY . .
 RUN npm install
 EXPOSE 3000
-CMD ["react-scripts","start"]
+CMD ["npm","start"]
